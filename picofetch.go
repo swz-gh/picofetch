@@ -18,17 +18,20 @@ const VERSION = "0.1.1"
 var distroLogos embed.FS
 
 //go:embed infotemplate.txt
-var infotemplate string
+var infoTemplate string
 
-func horiJoin(str1, str2 string) string {
-	removecolor, _ := regexp.Compile(`.\[(\d{1,3};?)+m`)
+// Join two multiline strings horizontally
+func horizontalJoin(str1, str2 string) string {
+	colorText, _ := regexp.Compile(`.\[(\d{1,3};?)+m`)
 
 	str1Lines := strings.Split(str1, "\n")
+	str2Lines := strings.Split(str2, "\n")
+
 	var str1Biggest float64 = 0
 	for _, v := range str1Lines {
-		str1Biggest = math.Max(float64(len(removecolor.ReplaceAllString(v, ""))), str1Biggest)
+		str1Biggest = math.Max(float64(len(colorText.ReplaceAllString(v, ""))), str1Biggest)
 	}
-	str2Lines := strings.Split(str2, "\n")
+
 	result := ""
 	for i := 0; i < int(math.Max(float64(len(str1Lines)), float64(len(str2Lines)))); i++ {
 		line1 := ""
@@ -39,8 +42,8 @@ func horiJoin(str1, str2 string) string {
 		if i < len(str2Lines) {
 			line2 = str2Lines[i]
 		}
-		line1pad := strings.Repeat(" ", int(str1Biggest)-len(removecolor.ReplaceAllString(line1, ""))+2)
-		result += line1 + line1pad + line2 + "\n"
+		line1Padding := strings.Repeat(" ", int(str1Biggest)-len(colorText.ReplaceAllString(line1, ""))+2)
+		result += line1 + line1Padding + line2 + "\n"
 	}
 	return result
 }
@@ -61,7 +64,7 @@ func main() {
 	var si sysinfo.SysInfo
 	si.GetSysInfo()
 
-	infopart := ""
+	info := ""
 
 	logoFile, err := distroLogos.ReadFile(fmt.Sprintf("os-ansi/%s.ansi", si.OS.Vendor))
 
@@ -71,12 +74,12 @@ func main() {
 
 	logo := string(logoFile)
 
-	infopart += colorCyan + bold + "picofetch" + colorGreen + " " + VERSION + colorReset + "\n"
+	info += colorCyan + bold + "picofetch" + colorGreen + " " + VERSION + colorReset + "\n"
 
-	infotemplate = strings.ReplaceAll(infotemplate, "\n", "\n"+colorGreen+bold)
-	infotemplate = strings.ReplaceAll(infotemplate, ": ", ":"+colorReset+" ")
+	infoTemplate = strings.ReplaceAll(infoTemplate, "\n", "\n"+colorGreen+bold)
+	infoTemplate = strings.ReplaceAll(infoTemplate, ": ", ":"+colorReset+" ")
 
-	ut, err := template.New("users").Parse(infotemplate)
+	ut, err := template.New("users").Parse(infoTemplate)
 	if err != nil {
 		panic(err)
 	}
@@ -86,7 +89,7 @@ func main() {
 		panic(err)
 	}
 
-	infopart += tpl.String()[1:]
+	info += tpl.String()[1:]
 
-	fmt.Print(horiJoin(logo, infopart))
+	fmt.Print(horizontalJoin(logo, info))
 }

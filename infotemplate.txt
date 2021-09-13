@@ -1,8 +1,7 @@
-
+%s
 OS: {{ .OS.Name }}
 Kernel: {{ .Kernel.Release }}
 Arch: {{ .OS.Architecture }}
-Hostname: {{ .Node.Hostname }}
 Vendor: {{ .Product.Vendor }}
 CPU: {{ .CPU.Model }}
 Cores/Threads: {{ .CPU.Cores }}/{{ .CPU.Threads }}

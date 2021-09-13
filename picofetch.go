@@ -5,6 +5,7 @@ import (
 	"embed"
 	"fmt"
 	"math"
+	"os/user"
 	"regexp"
 	"strings"
 	"text/template"
@@ -12,7 +13,7 @@ import (
 	"github.com/zcalusic/sysinfo"
 )
 
-const VERSION = "0.1.1"
+const VERSION = "0.2.0"
 
 //go:embed os-ansi
 var distroLogos embed.FS
@@ -53,7 +54,7 @@ func main() {
 
 	// colorRed := "\033[31m"
 	colorGreen := "\033[32m"
-	// colorYellow := "\033[33m"
+	colorYellow := "\033[33m"
 	// colorBlue := "\033[34m"
 	// colorPurple := "\033[35m"
 	colorCyan := "\033[36m"
@@ -74,12 +75,18 @@ func main() {
 
 	logo := string(logoFile)
 
-	info += colorCyan + bold + "picofetch" + colorGreen + " " + VERSION + colorReset + "\n"
+	fmt.Println(colorCyan + bold + "picofetch" + colorGreen + " " + VERSION + colorReset)
 
 	infoTemplate = strings.ReplaceAll(infoTemplate, "\n", "\n"+colorGreen+bold)
 	infoTemplate = strings.ReplaceAll(infoTemplate, ": ", ":"+colorReset+" ")
 
-	ut, err := template.New("users").Parse(infoTemplate)
+	user, err := user.Current()
+	if err != nil {
+		panic(err)
+	}
+	username := user.Username
+
+	ut, err := template.New("users").Parse(fmt.Sprintf(infoTemplate, colorYellow+username+colorGreen+"@"+colorYellow+si.Node.Hostname+colorReset))
 	if err != nil {
 		panic(err)
 	}
@@ -89,7 +96,7 @@ func main() {
 		panic(err)
 	}
 
-	info += tpl.String()[1:]
+	info += tpl.String()
 
 	fmt.Print(horizontalJoin(logo, info))
 }

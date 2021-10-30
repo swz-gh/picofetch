@@ -1,4 +1,4 @@
-module github.com/swz-gh/picofetch
+module github.com/swz-git/picofetch
 
 go 1.17
 
